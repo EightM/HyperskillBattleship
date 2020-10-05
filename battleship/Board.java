@@ -13,6 +13,8 @@ public class Board {
     private final int boardSize;
     private static final String FREE_CELL = "~";
     private static final String SHIP_CELL = "O";
+    private static final String MISS_CELL = "M";
+    private static final String HIT_CELL = "X";
     
 
     public Board(int size) {
@@ -41,6 +43,41 @@ public class Board {
         placeShipOnBoard(firstCoordinate, secondCoordinate, ship);
     }
 
+    public void takeAShot() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Take a shot!");
+
+        String coordinate = scanner.nextLine();
+        if (!checkShotCoordinate(coordinate)) {
+            return;
+        }
+
+        Point shot = getPointFromCoordinates(coordinate);
+        placeShotOnBoard(shot);
+    }
+
+    private void placeShotOnBoard(Point shot) {
+        if (gameBoard[shot.getY()][shot.getX()].equals(FREE_CELL)) {
+            gameBoard[shot.getY()][shot.getX()] = MISS_CELL;
+            printField();
+            System.out.println("You missed!");
+        } else {
+            gameBoard[shot.getY()][shot.getX()] = HIT_CELL;
+            printField();
+            System.out.println("You hit she ship!");
+        }
+    }
+
+    private boolean checkShotCoordinate(String coordinate) {
+        if (rowMapping.get(coordinate.substring(0, 1)) == null || Integer.parseInt(coordinate.substring(1)) > 10) {
+            System.out.println("Error! You entered the wrong coordinates! Try again:");
+            takeAShot();
+            return false;
+        }
+
+        return true;
+    }
+
     private void fillRowMapping() {
         char rowChar = 'A';
         for (int i = 0; i < boardSize; i++) {
@@ -61,7 +98,9 @@ public class Board {
         Point firstPoint = getPointFromCoordinates(firstCoordinate);
         Point secondPoint = getPointFromCoordinates(secondCoordinate);
         swapPointsIfNeeded(firstPoint, secondPoint);
-        checkPlacement(firstPoint, secondPoint, ship);
+        if (!checkPlacement(firstPoint, secondPoint, ship)) {
+            return;
+        }
 
         boolean isShipHorizontal = isShipHorizontal(firstPoint, secondPoint);
         drawShipOnBoard(firstPoint, secondPoint, isShipHorizontal);
@@ -90,19 +129,24 @@ public class Board {
         }
     }
 
-    private void checkPlacement(Point firstPoint, Point secondPoint, Ship ship) {
+    private boolean checkPlacement(Point firstPoint, Point secondPoint, Ship ship) {
 
         if (isShipBiggerThanShould(firstPoint, secondPoint, ship) || isShipLesserThanShould(firstPoint, secondPoint, ship)) {
             System.out.printf("Error! Wrong length of the %s! Try again:%n",
                     ship.getName());
             this.placeShip(ship);
+            return false;
         } else if (firstPoint.getX() != secondPoint.getX() && firstPoint.getY() != secondPoint.getY()) {
             System.out.printf("Error! Wrong ship location! Try again:%n");
             this.placeShip(ship);
+            return false;
         } else if (!checkBorders(firstPoint, secondPoint)) {
             System.out.println("Error! You placed it too close to another one. Try again:");
             this.placeShip(ship);
+            return false;
         }
+
+        return true;
     }
 
     private boolean isShipBiggerThanShould(Point firstPoint, Point secondPoint, Ship ship) {
@@ -135,22 +179,10 @@ public class Board {
         return new Point(bottomRightCornerX, bottomRightCornerY);
     }
 
-//    private Point getBottomLeftCornerOfCheckingArea(Point point) {
-//        int bottomLeftCornerX = point.getX() == 0 ? 0 : point.getX() - 1;
-//        int bottomLeftCornerY = point.getY() == boardSize - 1 ? point.getY() : point.getY() + 1;
-//        return new Point(bottomLeftCornerX, bottomLeftCornerY);
-//    }
-
     private Point getLeftUpperCornerOfCheckingArea(Point point) {
         int leftUpperCornerX = point.getX() == 0 ? 0 : point.getX() - 1;
         int leftUpperCornerY = point.getY() == 0 ? 0 : point.getY() - 1;
         return new Point(leftUpperCornerX, leftUpperCornerY);
-    }
-
-    private Point getTopRightCornerOfCheckingArea(Point point) {
-        int rightUpperCornerX = point.getX() == boardSize - 1 ? point.getX() : point.getX() + 1;
-        int rightUpperCornerY = point.getY() == 0 ? 0 : point.getY() - 1;
-        return new Point(rightUpperCornerX, rightUpperCornerY);
     }
 
     private boolean isShipHorizontal(Point firstPoint, Point secondPoint) {

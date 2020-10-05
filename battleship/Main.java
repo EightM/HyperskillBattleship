@@ -13,14 +13,12 @@ public class Main {
         Ship destroyer = new Destroyer();
 
         game.placeShipOnBoard(aircraft);
-        game.printBoard();
         game.placeShipOnBoard(battleship);
-        game.printBoard();
         game.placeShipOnBoard(submarine);
-        game.printBoard();
         game.placeShipOnBoard(cruiser);
-        game.printBoard();
         game.placeShipOnBoard(destroyer);
-        game.printBoard();
+
+        game.start();
+
     }
 }

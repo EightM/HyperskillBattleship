@@ -11,9 +11,15 @@ public class Game {
 
     public void placeShipOnBoard(Ship ship) {
         board.placeShip(ship);
+        board.printField();
     }
 
     public void printBoard() {
         board.printField();
+    }
+
+    public void start() {
+        System.out.println("The game starts");
+        board.takeAShot();
     }
 }
