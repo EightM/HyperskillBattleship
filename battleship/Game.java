@@ -20,6 +20,7 @@ public class Game {
 
     public void start() {
         System.out.println("The game starts");
+        board.printBattleField();
         board.takeAShot();
     }
 }

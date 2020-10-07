@@ -8,17 +8,21 @@ import java.util.Scanner;
 
 public class Board {
 
-    private final String[][] gameBoard = new String[10][10];
+    private final String[][] gameBoard;
     private final Map<String, Integer> rowMapping = new HashMap<>();
     private final int boardSize;
     private static final String FREE_CELL = "~";
     private static final String SHIP_CELL = "O";
     private static final String MISS_CELL = "M";
     private static final String HIT_CELL = "X";
+    private final String[][] fightBoard;
+
     
 
     public Board(int size) {
         this.boardSize = size;
+        gameBoard = new String[boardSize][boardSize];
+        fightBoard = new String[boardSize][boardSize];
         fillEmptyBoard();
         fillRowMapping();
     }
@@ -27,6 +31,16 @@ public class Board {
         System.out.println("  1 2 3 4 5 6 7 8 9 10");
         char rowChar = 'A';
         for (String[] strings : gameBoard) {
+            System.out.print(rowChar + " ");
+            System.out.println(String.join(" ", strings));
+            rowChar++;
+        }
+    }
+
+    public void printBattleField() {
+        System.out.println("  1 2 3 4 5 6 7 8 9 10");
+        char rowChar = 'A';
+        for (String[] strings : fightBoard) {
             System.out.print(rowChar + " ");
             System.out.println(String.join(" ", strings));
             rowChar++;
@@ -59,12 +73,16 @@ public class Board {
     private void placeShotOnBoard(Point shot) {
         if (gameBoard[shot.getY()][shot.getX()].equals(FREE_CELL)) {
             gameBoard[shot.getY()][shot.getX()] = MISS_CELL;
-            printField();
+            fightBoard[shot.getY()][shot.getX()] = MISS_CELL;
+            printBattleField();
             System.out.println("You missed!");
+            printField();
         } else {
             gameBoard[shot.getY()][shot.getX()] = HIT_CELL;
-            printField();
+            fightBoard[shot.getY()][shot.getX()] = HIT_CELL;
+            printBattleField();
             System.out.println("You hit she ship!");
+            printField();
         }
     }
 
@@ -90,6 +108,7 @@ public class Board {
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard.length; j++) {
                 gameBoard[i][j] = FREE_CELL;
+                fightBoard[i][j] = FREE_CELL;
             }
         }
     }
