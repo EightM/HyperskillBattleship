@@ -36,7 +36,7 @@ public class Board {
         }
     }
 
-    public void printBattleField() {
+    private void printBattleField() {
         System.out.println("  1 2 3 4 5 6 7 8 9 10");
         char rowChar = 'A';
         for (String[] strings : fightBoard) {
@@ -48,7 +48,6 @@ public class Board {
 
     public void placeShip(Ship ship) {
         Scanner scanner = new Scanner(System.in);
-
         System.out.printf("Enter the coordinates of the %s (%d cells)%n",
                 ship.getName(), ship.getSize());
         String firstCoordinate = scanner.next();
@@ -56,52 +55,50 @@ public class Board {
         placeShipOnBoard(firstCoordinate, secondCoordinate, ship);
     }
 
-    public void takeAShot() {
+    public void takeAShot(Board enemyBoard) {
         Scanner scanner = new Scanner(System.in);
 
         String coordinate = scanner.nextLine();
-        if (!checkShotCoordinate(coordinate)) {
+        if (!checkShotCoordinate(coordinate, enemyBoard)) {
             return;
         }
 
         Point shot = getPointFromCoordinates(coordinate);
-        placeShotOnBoard(shot);
+        placeShotOnBoard(shot, enemyBoard);
     }
 
-    private void placeShotOnBoard(Point shot) {
-        if (gameBoard[shot.getY()][shot.getX()].equals(FREE_CELL)) {
-            gameBoard[shot.getY()][shot.getX()] = MISS_CELL;
+    private void placeShotOnBoard(Point shot, Board enemyBoard) {
+        if (enemyBoard.gameBoard[shot.getY()][shot.getX()].equals(FREE_CELL)) {
+            enemyBoard.gameBoard[shot.getY()][shot.getX()] = MISS_CELL;
             fightBoard[shot.getY()][shot.getX()] = MISS_CELL;
-            printBattleField();
-            System.out.println("You missed! Try again:");
+            System.out.println("You missed!");
         } else {
-            gameBoard[shot.getY()][shot.getX()] = HIT_CELL;
+            enemyBoard.gameBoard[shot.getY()][shot.getX()] = HIT_CELL;
             fightBoard[shot.getY()][shot.getX()] = HIT_CELL;
-            printBattleField();
-            hitShip(shot);
+            hitShip(shot, enemyBoard);
         }
     }
 
-    private void hitShip(Point shot) {
-        ships.values().forEach(points -> points.remove(shot));
-        var iterator = ships.keySet().iterator();
+    private void hitShip(Point shot, Board enemyBoard) {
+        enemyBoard.ships.values().forEach(points -> points.remove(shot));
+        var iterator = enemyBoard.ships.keySet().iterator();
 
         while (iterator.hasNext()) {
             var ship = iterator.next();
-            if (ships.get(ship).isEmpty()) {
+            if (enemyBoard.ships.get(ship).isEmpty()) {
                 System.out.println("You sank a ship! Specify a new target:");
                 iterator.remove();
                 return;
             }
         }
 
-        System.out.println("You hit she ship! Try again:");
+        System.out.println("You hit she ship!");
     }
 
-    private boolean checkShotCoordinate(String coordinate) {
+    private boolean checkShotCoordinate(String coordinate, Board enemyBoard) {
         if (rowMapping.get(coordinate.substring(0, 1)) == null || Integer.parseInt(coordinate.substring(1)) > 10) {
             System.out.println("Error! You entered the wrong coordinates! Try again:");
-            takeAShot();
+            takeAShot(enemyBoard);
             return false;
         }
 
@@ -135,6 +132,7 @@ public class Board {
 
         boolean isShipHorizontal = isShipHorizontal(firstPoint, secondPoint);
         drawShipOnBoard(firstPoint, secondPoint, isShipHorizontal, ship);
+        printField();
     }
 
     private void swapPointsIfNeeded(Point firstPoint, Point secondPoint) {
@@ -231,5 +229,11 @@ public class Board {
 
     public boolean allShipsDestroyed() {
         return ships.isEmpty();
+    }
+
+    public void printAllFields() {
+        printBattleField();
+        System.out.println("---------------------");
+        printField();
     }
 }
