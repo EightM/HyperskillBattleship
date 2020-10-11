@@ -2,9 +2,7 @@ package battleship;
 
 import battleship.ships.Ship;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Board {
 
@@ -16,6 +14,7 @@ public class Board {
     private static final String MISS_CELL = "M";
     private static final String HIT_CELL = "X";
     private final String[][] fightBoard;
+    private final Map<Ship, Set<Point>> ships = new HashMap<>();
 
     
 
@@ -59,7 +58,6 @@ public class Board {
 
     public void takeAShot() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Take a shot!");
 
         String coordinate = scanner.nextLine();
         if (!checkShotCoordinate(coordinate)) {
@@ -75,15 +73,29 @@ public class Board {
             gameBoard[shot.getY()][shot.getX()] = MISS_CELL;
             fightBoard[shot.getY()][shot.getX()] = MISS_CELL;
             printBattleField();
-            System.out.println("You missed!");
-            printField();
+            System.out.println("You missed! Try again:");
         } else {
             gameBoard[shot.getY()][shot.getX()] = HIT_CELL;
             fightBoard[shot.getY()][shot.getX()] = HIT_CELL;
             printBattleField();
-            System.out.println("You hit she ship!");
-            printField();
+            hitShip(shot);
         }
+    }
+
+    private void hitShip(Point shot) {
+        ships.values().forEach(points -> points.remove(shot));
+        var iterator = ships.keySet().iterator();
+
+        while (iterator.hasNext()) {
+            var ship = iterator.next();
+            if (ships.get(ship).isEmpty()) {
+                System.out.println("You sank a ship! Specify a new target:");
+                iterator.remove();
+                return;
+            }
+        }
+
+        System.out.println("You hit she ship! Try again:");
     }
 
     private boolean checkShotCoordinate(String coordinate) {
@@ -122,7 +134,7 @@ public class Board {
         }
 
         boolean isShipHorizontal = isShipHorizontal(firstPoint, secondPoint);
-        drawShipOnBoard(firstPoint, secondPoint, isShipHorizontal);
+        drawShipOnBoard(firstPoint, secondPoint, isShipHorizontal, ship);
     }
 
     private void swapPointsIfNeeded(Point firstPoint, Point secondPoint) {
@@ -136,14 +148,17 @@ public class Board {
         }
     }
 
-    private void drawShipOnBoard(Point firstPoint, Point secondPoint, boolean isShipHorizontal) {
+    private void drawShipOnBoard(Point firstPoint, Point secondPoint, boolean isShipHorizontal, Ship ship) {
+        ships.putIfAbsent(ship, new HashSet<>());
         if (isShipHorizontal) {
             for (int i = firstPoint.getX(); i <= secondPoint.getX(); i++) {
                 gameBoard[firstPoint.getY()][i] = SHIP_CELL;
+                ships.get(ship).add(new Point(i, firstPoint.getY()));
             }
         } else {
             for (int i = firstPoint.getY(); i <= secondPoint.getY(); i++) {
                 gameBoard[i][firstPoint.getX()] = SHIP_CELL;
+                ships.get(ship).add(new Point(firstPoint.getX(), i));
             }
         }
     }
@@ -212,5 +227,9 @@ public class Board {
         int x = Integer.parseInt(coordinate.substring(1)) - 1;
         int y = rowMapping.get(coordinate.substring(0, 1));
         return new Point(x, y);
+    }
+
+    public boolean allShipsDestroyed() {
+        return ships.isEmpty();
     }
 }

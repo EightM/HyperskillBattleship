@@ -21,6 +21,10 @@ public class Game {
     public void start() {
         System.out.println("The game starts");
         board.printBattleField();
-        board.takeAShot();
+        System.out.println("Take a shot!");
+        while (!board.allShipsDestroyed()) {
+            board.takeAShot();
+        }
+        System.out.println("You sank the last ship. You won. Congratulations!");
     }
 }
